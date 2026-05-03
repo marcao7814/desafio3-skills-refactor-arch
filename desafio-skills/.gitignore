@@ -1,0 +1,41 @@
+
+# Node.js
+node_modules/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+
+
+.env
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+*.dist-info/
+*.egg-info/
+bin/
+lib/
+lib64/
+Scripts/
+pyvenv.cfg
+# Pacotes Python instalados fora de venv
+blinker/
+click/
+colorama/
+flask/
+flask_cors/
+itsdangerous/
+jinja2/
+markupsafe/
+werkzeug/
+
+# SQLite
+*.db
+instance/
