@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Erros Encontrados — code-smells-project</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #0d1117;
+      --surf:   #161b22;
+      --border: #30363d;
+      --border2:#21262d;
+      --text:   #e6edf3;
+      --soft:   #adbac7;
+      --muted:  #7d8590;
+      --c: #f85149;
+      --h: #f0883e;
+      --m: #d29922;
+      --l: #3fb950;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.65;
+    }
+
+    /* ── HEADER ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 52px 24px 44px;
+      text-align: center;
+    }
+    header h1 { font-size: 1.55rem; font-weight: 600; color: #fff; letter-spacing: -0.01em; }
+    header .sub { margin-top: 6px; color: var(--muted); font-size: 0.85rem; }
+    header .meta {
+      margin-top: 18px;
+      display: inline-flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    header .meta span { display: flex; align-items: center; gap: 6px; }
+    header .meta code {
+      background: #ffffff0d;
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: var(--soft);
+      font-size: 0.78rem;
+    }
+
+    /* ── LAYOUT ── */
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 48px;
+    }
+
+    /* ── SECTION LABEL ── */
+    .sec-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge.c { color: var(--c); background: #f8514912; border: 1px solid #f8514930; }
+    .badge.h { color: var(--h); background: #f0883e12; border: 1px solid #f0883e30; }
+    .badge.m { color: var(--m); background: #d2992212; border: 1px solid #d2992230; }
+    .badge.l { color: var(--l); background: #3fb95012; border: 1px solid #3fb95030; }
+
+    /* ── SEVERITY TABLE ── */
+    .sev-table table { width: 100%; border-collapse: collapse; font-size: 0.855rem; }
+    .sev-table th {
+      text-align: left;
+      font-size: 0.67rem; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sev-table td { padding: 12px 14px; border-bottom: 1px solid var(--border2); vertical-align: middle; }
+    .sev-table tr:last-child td { border-bottom: none; }
+    .sev-table tr:hover td { background: #ffffff03; }
+    .sev-table td:last-child { color: var(--soft); font-size: 0.82rem; }
+
+    /* ── FINDINGS ── */
+    .findings { display: flex; flex-direction: column; gap: 12px; }
+
+    .finding {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      border-left: 3px solid;
+    }
+    .finding.c { border-left-color: var(--c); }
+    .finding.h { border-left-color: var(--h); }
+    .finding.m { border-left-color: var(--m); }
+    .finding.l { border-left-color: var(--l); }
+
+    .finding-head {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid transparent;
+      transition: background .15s;
+    }
+    .finding-head:hover { background: #ffffff04; }
+    .finding.open .finding-head { border-bottom-color: var(--border2); }
+
+    .finding-num {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 24px;
+    }
+
+    .finding-title {
+      flex: 1;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .finding-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .finding-line {
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: #ffffff08;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: ui-monospace, monospace;
+    }
+
+    .chevron {
+      color: var(--muted);
+      font-size: 0.7rem;
+      transition: transform .2s;
+    }
+    .finding.open .chevron { transform: rotate(180deg); }
+
+    .finding-body {
+      display: none;
+      padding: 18px 20px;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .finding.open .finding-body { display: flex; }
+
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tag {
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: #ffffff08;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .finding-desc {
+      font-size: 0.845rem;
+      color: var(--soft);
+      line-height: 1.7;
+    }
+
+    pre {
+      background: #010409;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: #adbac7;
+    }
+
+    pre .comment { color: #6e7681; }
+    pre .keyword { color: #ff7b72; }
+    pre .string  { color: #a5d6ff; }
+    pre .fn      { color: #d2a8ff; }
+
+    .note {
+      padding: 11px 15px;
+      border-left: 2px solid;
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .note.c { border-color: #f8514940; }
+    .note.h { border-color: #f0883e40; }
+    .note.m { border-color: #d2992240; }
+    .note.l { border-color: #3fb95040; }
+    .note-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      opacity: .7;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .sol {
+      font-size: 0.82rem;
+      color: #58a6ff;
+      line-height: 1.65;
+    }
+    .sol-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    code {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.82em;
+      background: #ffffff0c;
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--soft);
+    }
+
+    /* ── SUMMARY TABLE ── */
+    .sum-table table { width: 100%; border-collapse: collapse; font-size: 0.855rem; }
+    .sum-table th {
+      text-align: left;
+      font-size: 0.67rem; font-weight: 600;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sum-table td { padding: 11px 14px; border-bottom: 1px solid var(--border2); vertical-align: middle; font-size: 0.845rem; }
+    .sum-table tr:last-child td { border-bottom: none; }
+    .sum-table tr:hover td { background: #ffffff03; }
+    .sum-table td.num { color: var(--muted); font-family: ui-monospace, monospace; font-size: 0.78rem; }
+    .sum-table td.line-col { font-family: ui-monospace, monospace; font-size: 0.78rem; color: var(--muted); }
+
+    /* ── COUNTERS ── */
+    .counters {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .counter {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 100px;
+      text-align: center;
+    }
+    .counter-num { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .counter-num.c { color: var(--c); }
+    .counter-num.h { color: var(--h); }
+    .counter-num.m { color: var(--m); }
+    .counter-num.l { color: var(--l); }
+    .counter-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+
+    hr { border: none; border-top: 1px solid var(--border2); }
+
+    /* ── SEV GROUP HEADER ── */
+    .sev-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .sev-header .sev-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+    .sev-header .sev-name.c { color: var(--c); }
+    .sev-header .sev-name.h { color: var(--h); }
+    .sev-header .sev-name.m { color: var(--m); }
+    .sev-header .sev-name.l { color: var(--l); }
+    .sev-header .sev-count {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .sev-group { display: flex; flex-direction: column; gap: 24px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Erros Encontrados — code-smells-project</h1>
+  <p class="sub">Análise Integrada com Tipos e Classificações de Code Smells</p>
+  <div class="meta">
+    <span>Arquivo: <code>models.py</code></span>
+    <span>Total: <code>17 findings</code></span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- O QUE É CODE SMELL -->
+  <section>
+    <p class="sec-label">O que é um Code Smell?</p>
+    <p style="font-size:.875rem; color:var(--soft); line-height:1.7; margin-bottom:20px">
+      Na engenharia de software, <em>code smells</em> são sintomas de que algo está errado no design ou
+      na implementação, prejudicando manutenção, testabilidade e evolução do sistema. Os problemas abaixo
+      foram classificados segundo a escala de severidade baseada em MVC e SOLID.
+    </p>
+    <div class="sev-table">
+      <table>
+        <thead>
+          <tr><th>Severidade</th><th>Critério</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge c">Critical</span></td>
+            <td>Falhas graves de segurança ou arquitetura — expõem dados, permitem ataques ou violam completamente a separação de responsabilidades</td>
+          </tr>
+          <tr>
+            <td><span class="badge h">High</span></td>
+            <td>Violações fortes de MVC/SOLID — acoplamento excessivo, lógica no lugar errado, dificultam manutenção e testes</td>
+          </tr>
+          <tr>
+            <td><span class="badge m">Medium</span></td>
+            <td>Problemas de padronização, duplicação ou performance moderada — queries N+1, magic numbers, validações ausentes</td>
+          </tr>
+          <tr>
+            <td><span class="badge l">Low</span></td>
+            <td>Melhorias de legibilidade — nomenclatura ruim, variáveis obscuras, código desorganizado</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CONTADORES -->
+  <section>
+    <p class="sec-label">Distribuição por Severidade</p>
+    <div class="counters">
+      <div class="counter"><span class="counter-num c">6</span><span class="counter-label">Critical</span></div>
+      <div class="counter"><span class="counter-num h">6</span><span class="counter-label">High</span></div>
+      <div class="counter"><span class="counter-num m">3</span><span class="counter-label">Medium</span></div>
+      <div class="counter"><span class="counter-num l">2</span><span class="counter-label">Low</span></div>
+    </div>
+  </section>
+
+  <!-- FINDINGS: CRITICAL -->
+  <section>
+    <p class="sec-label">Findings Detalhados</p>
+
+    <div class="sev-group">
+      <div>
+        <div class="sev-header"><span class="sev-name c">● Critical</span><span class="sev-count">6 findings</span></div>
+        <div class="findings">
+
+          <!-- C1 -->
+          <div class="finding c" id="f1">
+            <div class="finding-head" onclick="toggle('f1')">
+              <span class="finding-num">01</span>
+              <span class="finding-title">SQL Injection — SELECT via concatenação (GET produtos)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 28</span>
+                <span class="badge c">Critical</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Falha de Segurança</span>
+                <span class="tag">models.py:28</span>
+              </div>
+              <pre>cursor.execute(<span class="string">"SELECT * FROM produtos WHERE id = "</span> + str(id))</pre>
+              <p class="finding-desc">
+                Concatenação direta de input do usuário na query SQL. Qualquer valor passado como <code>id</code>
+                é interpretado como parte do comando SQL — um atacante pode enviar <code>1 OR 1=1</code> ou
+                <code>1; DROP TABLE produtos</code> e obter ou destruir dados.
+              </p>
+              <div class="note c">
+                <span class="note-label">Por que é Critical</span>
+                SQL Injection é uma das vulnerabilidades mais exploradas do mundo (OWASP Top 1). Uma única
+                requisição maliciosa pode expor toda a base de dados ou corrompê-la permanentemente.
+                Não requer autenticação para ser explorada.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+                Usar parâmetros parametrizáveis — nunca concatenar valores externos diretamente na query:
+              </div>
+              <pre>cursor.execute(<span class="string">"SELECT * FROM produtos WHERE id = ?"</span>, (id,))</pre>
+            </div>
+          </div>
+
+          <!-- C2 -->
+          <div class="finding c" id="f2">
+            <div class="finding-head" onclick="toggle('f2')">
+              <span class="finding-num">02</span>
+              <span class="finding-title">SQL Injection — INSERT via concatenação (produtos)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 47</span>
+                <span class="badge c">Critical</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Falha de Segurança</span>
+                <span class="tag">models.py:47</span>
+              </div>
+              <pre>cursor.execute(
+    <span class="string">"INSERT INTO produtos (...) VALUES ('"</span> +
+    nome + <span class="string">"', '"</span> + descricao + <span class="string">"', "</span> + str(preco) + <span class="comment"> ..."</span>
+)</pre>
+              <p class="finding-desc">
+                INSERT com concatenação de strings para todos os campos. Um valor como
+                <code>nome = "x', 'y', 0, 0, 'z'); DROP TABLE produtos; --"</code>
+                executa comandos arbitrários no banco.
+              </p>
+              <div class="note c">
+                <span class="note-label">Por que é Critical</span>
+                Operação de escrita — o atacante pode não apenas ler mas modificar, inserir
+                ou apagar registros diretamente.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+              </div>
+              <pre>cursor.execute(
+    <span class="string">"INSERT INTO produtos (nome, descricao, preco, estoque, categoria) VALUES (?, ?, ?, ?, ?)"</span>,
+    (nome, descricao, preco, estoque, categoria)
+)</pre>
+            </div>
+          </div>
+
+          <!-- C3 -->
+          <div class="finding c" id="f3">
+            <div class="finding-head" onclick="toggle('f3')">
+              <span class="finding-num">03</span>
+              <span class="finding-title">SQL Injection — UPDATE via concatenação (produtos)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 58</span>
+                <span class="badge c">Critical</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Falha de Segurança</span>
+                <span class="tag">models.py:58</span>
+              </div>
+              <pre>cursor.execute(
+    <span class="string">"UPDATE produtos SET nome = '"</span> + nome + <span class="string">"' ..."</span> +
+    <span class="string">" WHERE id = "</span> + str(id)
+)</pre>
+              <p class="finding-desc">
+                UPDATE com concatenação em todos os campos e no filtro <code>WHERE id</code>.
+                Permite alterar registros arbitrários ou executar subcomandos SQL.
+              </p>
+              <div class="note c">
+                <span class="note-label">Por que é Critical</span>
+                Um atacante pode modificar qualquer linha do banco manipulando o <code>id</code>
+                ou os valores dos campos via payload.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+              </div>
+              <pre>cursor.execute(
+    <span class="string">"UPDATE produtos SET nome=?, descricao=?, preco=?, estoque=?, categoria=? WHERE id=?"</span>,
+    (nome, descricao, preco, estoque, categoria, id)
+)</pre>
+            </div>
+          </div>
+
+          <!-- C4 -->
+          <div class="finding c" id="f4">
+            <div class="finding-head" onclick="toggle('f4')">
+              <span class="finding-num">04</span>
+              <span class="finding-title">SQL Injection — DELETE via concatenação (produtos)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 68</span>
+                <span class="badge c">Critical</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Falha de Segurança</span>
+                <span class="tag">models.py:68</span>
+              </div>
+              <pre>cursor.execute(<span class="string">"DELETE FROM produtos WHERE id = "</span> + str(id))</pre>
+              <p class="finding-desc">
+                DELETE com concatenação direta do <code>id</code>. Passando
+                <code>id = "1 OR 1=1"</code> apaga todos os registros da tabela de uma vez.
+              </p>
+              <div class="note c">
+                <span class="note-label">Por que é Critical</span>
+                Operação destrutiva sem parâmetros seguros — permite deleção em massa de dados irreversível.
+              </div>
+              <div class="sol"><span class="sol-label">Solução</span></div>
+              <pre>cursor.execute(<span class="string">"DELETE FROM produtos WHERE id = ?"</span>, (id,))</pre>
+            </div>
+          </div>
+
+          <!-- C5 -->
+          <div class="finding c" id="f5">
+            <div class="finding-head" onclick="toggle('f5')">
+              <span class="finding-num">05</span>
+              <span class="finding-title">SQL Injection + Bypass de Autenticação (SELECT usuários)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 109</span>
+                <span class="badge c">Critical</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Authentication Bypass</span>
+                <span class="tag">models.py:109</span>
+              </div>
+              <pre>cursor.execute(
+    <span class="string">"SELECT * FROM usuarios WHERE email = '"</span> + email +
+    <span class="string">"' AND senha = '"</span> + senha + <span class="string">"'"</span>
+)</pre>
+              <p class="finding-desc">
+                Email e senha concatenados diretamente na query de autenticação. Passando
+                <code>email = "' OR '1'='1' --"</code> e qualquer senha, o <code>WHERE</code>
+                sempre retorna verdadeiro — qualquer pessoa entra no sistema sem credenciais válidas.
+              </p>
+              <div class="note c">
+                <span class="note-label">Por que é Critical</span>
+                Permite bypass total da autenticação. Um atacante pode acessar qualquer conta sem
+                conhecer a senha — incluindo contas administrativas.
+              </div>
+              <div class="sol"><span class="sol-label">Solução</span></div>
+              <pre>cursor.execute(
+    <span class="string">"SELECT * FROM usuarios WHERE email = ? AND senha = ?"</span>,
+    (email, senha)
+)</pre>
+            </div>
+          </div>
+
+          <!-- C6 -->
+          <div class="finding c" id="f6">
+            <div class="finding-head" onclick="toggle('f6')">
+              <span class="finding-num">06</span>
+              <span class="finding-title">SQL Injection — INSERT via concatenação (usuários)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 127</span>
+                <span class="badge c">Critical</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Privilege Escalation</span>
+                <span class="tag">models.py:127</span>
+              </div>
+              <pre>cursor.execute(
+    <span class="string">"INSERT INTO usuarios (...) VALUES ('"</span> +
+    nome + <span class="string">"', '"</span> + email + <span class="string">"', '"</span> + senha + <span class="string">"', '"</span> + tipo + <span class="string">"')"</span>
+)</pre>
+              <p class="finding-desc">
+                Cadastro de usuários com concatenação direta. Permite criação de usuários com payload
+                malicioso nos campos ou escalada de privilégios manipulando o campo <code>tipo</code>.
+              </p>
+              <div class="note c">
+                <span class="note-label">Por que é Critical</span>
+                Além de SQL Injection clássico, um atacante pode se cadastrar como
+                <code>tipo = "admin"</code> ou encerrar o INSERT e executar outros comandos.
+              </div>
+              <div class="sol"><span class="sol-label">Solução</span></div>
+              <pre>cursor.execute(
+    <span class="string">"INSERT INTO usuarios (nome, email, senha, tipo) VALUES (?, ?, ?, ?)"</span>,
+    (nome, email, senha, tipo)
+)</pre>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- HIGH -->
+      <div>
+        <div class="sev-header"><span class="sev-name h">● High</span><span class="sev-count">6 findings</span></div>
+        <div class="findings">
+
+          <!-- H1 -->
+          <div class="finding h" id="f7">
+            <div class="finding-head" onclick="toggle('f7')">
+              <span class="finding-num">07</span>
+              <span class="finding-title">Query N+1 em loop de itens do pedido</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 139</span>
+                <span class="badge h">High</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Query N+1</span>
+                <span class="tag">Bloatheads</span>
+                <span class="tag">Performance</span>
+                <span class="tag">models.py:139</span>
+              </div>
+              <pre><span class="keyword">for</span> item <span class="keyword">in</span> itens:
+    cursor.execute(<span class="string">"SELECT * FROM produtos WHERE id = "</span> + str(item[<span class="string">"produto_id"</span>]))
+    produto = cursor.fetchone()</pre>
+              <p class="finding-desc">
+                Para cada item do pedido é executada uma query separada ao banco. Se o pedido tiver
+                50 itens, são 50 queries individuais — o que poderia ser resolvido com uma única
+                query usando <code>IN (...)</code>.
+              </p>
+              <div class="note h">
+                <span class="note-label">Por que é High</span>
+                Em sistemas com volume moderado de pedidos, isso degrada a performance significativamente.
+                Contém também SQL Injection secundário pelo <code>str(item["produto_id"])</code>.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução — buscar todos os IDs em uma única query</span>
+              </div>
+              <pre>ids = [item[<span class="string">"produto_id"</span>] <span class="keyword">for</span> item <span class="keyword">in</span> itens]
+placeholders = <span class="string">","</span>.join(<span class="string">"?"</span> * len(ids))
+cursor.execute(<span class="fn">f</span><span class="string">"SELECT * FROM produtos WHERE id IN ({placeholders})"</span>, ids)</pre>
+            </div>
+          </div>
+
+          <!-- H2 -->
+          <div class="finding h" id="f8">
+            <div class="finding-head" onclick="toggle('f8')">
+              <span class="finding-num">08</span>
+              <span class="finding-title">Cursores aninhados — pedidos por usuário (Callback Hell)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 173</span>
+                <span class="badge h">High</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Callback Hell</span>
+                <span class="tag">Cursores Aninhados</span>
+                <span class="tag">Bloatheads</span>
+                <span class="tag">models.py:173</span>
+              </div>
+              <pre>cursor = db.cursor()
+cursor.execute(<span class="string">"SELECT * FROM pedidos WHERE usuario_id = "</span> + str(usuario_id))
+rows = cursor.fetchall()
+<span class="keyword">for</span> row <span class="keyword">in</span> rows:
+    cursor2 = db.cursor()
+    cursor2.execute(<span class="string">"SELECT * FROM itens_pedido WHERE pedido_id = "</span> + str(row[<span class="string">"id"</span>]))
+    itens = cursor2.fetchall()
+    <span class="keyword">for</span> item <span class="keyword">in</span> itens:
+        cursor3 = db.cursor()  <span class="comment"># terceiro nível</span></pre>
+              <p class="finding-desc">
+                Três cursores aninhados (<code>cursor</code>, <code>cursor2</code>, <code>cursor3</code>)
+                para buscar pedidos, itens e produtos em loops encadeados. Estrutura análoga ao
+                <strong>Callback Hell</strong> — cada nível adiciona complexidade e dificulta
+                rastreamento de erros.
+              </p>
+              <div class="note h">
+                <span class="note-label">Por que é High</span>
+                Além da ilegibilidade, gera N+1 em dois níveis. Qualquer mudança no schema
+                impacta os três níveis de aninhamento simultaneamente.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+                Substituir por JOINs ou queries únicas com mapeamento posterior em Python.
+              </div>
+            </div>
+          </div>
+
+          <!-- H3 -->
+          <div class="finding h" id="f9">
+            <div class="finding-head" onclick="toggle('f9')">
+              <span class="finding-num">09</span>
+              <span class="finding-title">Cursores aninhados — todos os pedidos sem filtro</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 210</span>
+                <span class="badge h">High</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Callback Hell</span>
+                <span class="tag">Query N+1</span>
+                <span class="tag">Performance</span>
+                <span class="tag">models.py:210</span>
+              </div>
+              <pre>cursor.execute(<span class="string">"SELECT * FROM pedidos"</span>)  <span class="comment"># sem filtro, sem limite</span>
+rows = cursor.fetchall()
+<span class="keyword">for</span> row <span class="keyword">in</span> rows:
+    cursor2 = db.cursor()
+    cursor2.execute(<span class="string">"SELECT * FROM itens_pedido WHERE pedido_id = "</span> + str(row[<span class="string">"id"</span>]))
+    <span class="keyword">for</span> item <span class="keyword">in</span> itens:
+        cursor3 = db.cursor()</pre>
+              <p class="finding-desc">
+                Mesma estrutura de cursores aninhados porém listando <strong>todos</strong> os pedidos
+                sem nenhum filtro ou paginação. Com volumes reais de dados, isso pode gerar centenas
+                de queries por requisição.
+              </p>
+              <div class="note h">
+                <span class="note-label">Por que é High</span>
+                <code>SELECT * FROM pedidos</code> sem paginação + N+1 em dois níveis = risco real
+                de timeout e sobrecarga do banco em produção.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+                Usar JOIN entre <code>pedidos</code>, <code>itens_pedido</code> e <code>produtos</code>
+                numa única query com <code>GROUP BY</code> ou processar com ORM adequado.
+              </div>
+            </div>
+          </div>
+
+          <!-- H4 -->
+          <div class="finding h" id="f10">
+            <div class="finding-head" onclick="toggle('f10')">
+              <span class="finding-num">10</span>
+              <span class="finding-title">Senha exposta na listagem geral de usuários</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 75</span>
+                <span class="badge h">High</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Sensitive Data Exposure</span>
+                <span class="tag">Violação de Privacidade</span>
+                <span class="tag">models.py:75</span>
+              </div>
+              <pre>result.append({
+    <span class="string">"id"</span>: row[<span class="string">"id"</span>],
+    <span class="string">"nome"</span>: row[<span class="string">"nome"</span>],
+    <span class="string">"email"</span>: row[<span class="string">"email"</span>],
+    <span class="string">"senha"</span>: row[<span class="string">"senha"</span>],  <span class="comment"># ← exposto</span>
+    <span class="string">"tipo"</span>: row[<span class="string">"tipo"</span>],
+    <span class="string">"criado_em"</span>: row[<span class="string">"criado_em"</span>]
+})</pre>
+              <p class="finding-desc">
+                A função <code>get_todos_usuarios()</code> inclui o campo <code>senha</code>
+                no resultado retornado pela API. Qualquer pessoa com acesso ao endpoint
+                recebe as senhas de todos os usuários.
+              </p>
+              <div class="note h">
+                <span class="note-label">Por que é High</span>
+                Exposição de credenciais em massa. Mesmo que hasheadas, a exposição do hash
+                facilita ataques de dicionário offline contra todas as contas.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+                Nunca incluir <code>senha</code> na serialização de respostas. Remover o campo
+                do dicionário retornado e usar <code>SELECT id, nome, email, tipo, criado_em</code>.
+              </div>
+            </div>
+          </div>
+
+          <!-- H5 -->
+          <div class="finding h" id="f11">
+            <div class="finding-head" onclick="toggle('f11')">
+              <span class="finding-num">11</span>
+              <span class="finding-title">Senha exposta + SQL Injection ao buscar usuário por ID</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 92</span>
+                <span class="badge h">High</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Sensitive Data Exposure</span>
+                <span class="tag">SQL Injection</span>
+                <span class="tag">models.py:92</span>
+              </div>
+              <pre>cursor.execute(<span class="string">"SELECT * FROM usuarios WHERE id = "</span> + str(id))
+row = cursor.fetchone()
+<span class="keyword">if</span> row:
+    <span class="keyword">return</span> { ..., <span class="string">"senha"</span>: row[<span class="string">"senha"</span>], ... }  <span class="comment"># ← hash exposto</span></pre>
+              <p class="finding-desc">
+                Duplo problema: SQL Injection no <code>WHERE id =</code> concatenado + campo
+                <code>senha</code> incluído na resposta. Usa também <code>SELECT *</code>
+                retornando todos os campos indiscriminadamente.
+              </p>
+              <div class="note h">
+                <span class="note-label">Por que é High</span>
+                Combina dois vetores de ataque: injeção para acessar qualquer registro +
+                exposição do hash da senha do registro acessado.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+                <code>SELECT id, nome, email, tipo, criado_em FROM usuarios WHERE id = ?</code>
+              </div>
+            </div>
+          </div>
+
+          <!-- H6 -->
+          <div class="finding h" id="f12">
+            <div class="finding-head" onclick="toggle('f12')">
+              <span class="finding-num">12</span>
+              <span class="finding-title">SQL Injection em criação de pedido</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 120</span>
+                <span class="badge h">High</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Input externo</span>
+                <span class="tag">models.py:120</span>
+              </div>
+              <pre>cursor.execute(<span class="string">"SELECT * FROM produtos WHERE id = "</span> + str(item[<span class="string">"produto_id"</span>]))</pre>
+              <p class="finding-desc">
+                Concatenação de <code>produto_id</code> vindo do payload da requisição. O valor
+                não é validado nem sanitizado antes de ser inserido na query.
+              </p>
+              <div class="note h">
+                <span class="note-label">Por que é High</span>
+                Input externo (corpo da requisição) sendo concatenado diretamente — vetor de
+                injeção num fluxo de negócio crítico (criação de pedido).
+              </div>
+              <div class="sol"><span class="sol-label">Solução</span></div>
+              <pre>cursor.execute(<span class="string">"SELECT * FROM produtos WHERE id = ?"</span>, (item[<span class="string">"produto_id"</span>],))</pre>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MEDIUM -->
+      <div>
+        <div class="sev-header"><span class="sev-name m">● Medium</span><span class="sev-count">3 findings</span></div>
+        <div class="findings">
+
+          <!-- M1 -->
+          <div class="finding m" id="f13">
+            <div class="finding-head" onclick="toggle('f13')">
+              <span class="finding-num">13</span>
+              <span class="finding-title">Magic Numbers em cálculo de desconto</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 257</span>
+                <span class="badge m">Medium</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Magic Numbers</span>
+                <span class="tag">Regra de Negócio Hardcoded</span>
+                <span class="tag">models.py:257</span>
+              </div>
+              <pre>desconto = 0
+<span class="keyword">if</span> faturamento > 10000:
+    desconto = faturamento * 0.1
+<span class="keyword">elif</span> faturamento > 5000:
+    desconto = faturamento * 0.05
+<span class="keyword">elif</span> faturamento > 1000:
+    desconto = faturamento * 0.02</pre>
+              <p class="finding-desc">
+                Valores <code>10000</code>, <code>5000</code>, <code>1000</code>, <code>0.1</code>,
+                <code>0.05</code> e <code>0.02</code> aparecem diretamente no código sem nenhuma
+                constante nomeada. Não há como saber se <code>0.1</code> representa 10% de desconto
+                ou outro valor sem ler todo o contexto.
+              </p>
+              <div class="note m">
+                <span class="note-label">Por que é Medium</span>
+                Categoria LOW por convenção, promovido a MEDIUM pois regras de negócio financeiras
+                hardcoded são mais difíceis de auditar, alterar e validar com segurança.
+              </div>
+              <div class="sol"><span class="sol-label">Solução — usar constantes nomeadas</span></div>
+              <pre>LIMITE_DESCONTO_ALTO  = 10000
+LIMITE_DESCONTO_MEDIO = 5000
+LIMITE_DESCONTO_BAIXO = 1000
+TAXA_DESCONTO_ALTO    = 0.10
+TAXA_DESCONTO_MEDIO   = 0.05
+TAXA_DESCONTO_BAIXO   = 0.02</pre>
+            </div>
+          </div>
+
+          <!-- M2 -->
+          <div class="finding m" id="f14">
+            <div class="finding-head" onclick="toggle('f14')">
+              <span class="finding-num">14</span>
+              <span class="finding-title">SQL Injection via busca dinâmica com concatenação</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 289</span>
+                <span class="badge m">Medium</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">SQL Injection</span>
+                <span class="tag">Query Dinâmica Insegura</span>
+                <span class="tag">models.py:289</span>
+              </div>
+              <pre>query = <span class="string">"SELECT * FROM produtos WHERE 1=1"</span>
+<span class="keyword">if</span> termo:
+    query += <span class="string">" AND (nome LIKE '%"</span> + termo + <span class="string">"%' OR descricao LIKE '%"</span> + termo + <span class="string">"%')"</span>
+<span class="keyword">if</span> categoria:
+    query += <span class="string">" AND categoria = '"</span> + categoria + <span class="string">"'"</span>
+<span class="keyword">if</span> preco_min:
+    query += <span class="string">" AND preco >= "</span> + str(preco_min)</pre>
+              <p class="finding-desc">
+                Query montada dinamicamente por concatenação para suportar filtros opcionais.
+                Todos os parâmetros — <code>termo</code>, <code>categoria</code>,
+                <code>preco_min</code>, <code>preco_max</code> — são injetáveis diretamente.
+              </p>
+              <div class="note m">
+                <span class="note-label">Por que é Medium</span>
+                Combina <em>Código Duplicado</em> (padrão de concatenação repetido 4 vezes) com
+                SQL Injection. A construção dinâmica de queries por string é um anti-pattern conhecido.
+              </div>
+              <div class="sol"><span class="sol-label">Solução — lista de condições com parâmetros separados</span></div>
+              <pre>conditions = [<span class="string">"1=1"</span>]
+params = []
+<span class="keyword">if</span> termo:
+    conditions.append(<span class="string">"(nome LIKE ? OR descricao LIKE ?)"</span>)
+    params.extend([<span class="fn">f</span><span class="string">"%{termo}%"</span>, <span class="fn">f</span><span class="string">"%{termo}%"</span>])
+<span class="keyword">if</span> categoria:
+    conditions.append(<span class="string">"categoria = ?"</span>)
+    params.append(categoria)
+query = <span class="string">"SELECT * FROM produtos WHERE "</span> + <span class="string">" AND "</span>.join(conditions)
+cursor.execute(query, params)</pre>
+            </div>
+          </div>
+
+          <!-- M3 -->
+          <div class="finding m" id="f15">
+            <div class="finding-head" onclick="toggle('f15')">
+              <span class="finding-num">15</span>
+              <span class="finding-title">Código Duplicado — padrão de concatenação repetido</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 289</span>
+                <span class="badge m">Medium</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Código Duplicado</span>
+                <span class="tag">DRY Violation</span>
+                <span class="tag">models.py:289</span>
+              </div>
+              <p class="finding-desc">
+                O padrão <code>query += " AND campo = '" + valor + "'"</code> é repetido 4 vezes
+                com variações mínimas. Qualquer refatoração para usar parâmetros exigirá modificar
+                todos os 4 pontos separadamente.
+              </p>
+              <div class="note m">
+                <span class="note-label">Por que é Medium — Código Duplicado</span>
+                Viola o princípio DRY. Se uma regra muda (ex: adicionar sanitização de
+                <code>termo</code>), precisa ser aplicada em múltiplos lugares. A chance de
+                inconsistência é alta — especialmente em código de segurança.
+              </div>
+              <div class="sol">
+                <span class="sol-label">Solução</span>
+                Centralizar a construção da query em um helper reutilizável que receba
+                os filtros como dicionário.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- LOW -->
+      <div>
+        <div class="sev-header"><span class="sev-name l">● Low</span><span class="sev-count">2 findings</span></div>
+        <div class="findings">
+
+          <!-- L1 -->
+          <div class="finding l" id="f16">
+            <div class="finding-head" onclick="toggle('f16')">
+              <span class="finding-num">16</span>
+              <span class="finding-title">Nomes genéricos de variáveis (cursor, cursor2, cursor3)</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 173</span>
+                <span class="badge l">Low</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Variáveis Abreviadas</span>
+                <span class="tag">Nomenclatura Ruim</span>
+                <span class="tag">models.py:173</span>
+              </div>
+              <pre>cursor  = db.cursor()   <span class="comment"># o que faz?</span>
+cursor2 = db.cursor()   <span class="comment"># o que faz?</span>
+cursor3 = db.cursor()   <span class="comment"># o que faz?</span></pre>
+              <p class="finding-desc">
+                Cursores nomeados sequencialmente sem indicar seu propósito. O código é lido
+                muito mais vezes do que é escrito — nomes como <code>cursor2</code> e
+                <code>cursor3</code> obrigam o leitor a rastrear o contexto para entender
+                o que cada um representa.
+              </p>
+              <div class="note l">
+                <span class="note-label">Por que é Low — Variáveis Abreviadas</span>
+                Problema de legibilidade e Clean Code. Não causa falhas de execução por si só,
+                mas aumenta a carga cognitiva desnecessariamente.
+              </div>
+              <div class="sol"><span class="sol-label">Solução — nomes descritivos</span></div>
+              <pre>pedidos_cursor  = db.cursor()
+itens_cursor    = db.cursor()
+produtos_cursor = db.cursor()</pre>
+            </div>
+          </div>
+
+          <!-- L2 -->
+          <div class="finding l" id="f17">
+            <div class="finding-head" onclick="toggle('f17')">
+              <span class="finding-num">17</span>
+              <span class="finding-title">Variável inicializada fora do bloco condicional</span>
+              <div class="finding-meta">
+                <span class="finding-line">linha 256</span>
+                <span class="badge l">Low</span>
+                <span class="chevron">▼</span>
+              </div>
+            </div>
+            <div class="finding-body">
+              <div class="tag-row">
+                <span class="tag">Dead Code</span>
+                <span class="tag">Organização de Código</span>
+                <span class="tag">models.py:256</span>
+              </div>
+              <pre>desconto = 0          <span class="comment"># valor padrão implícito</span>
+<span class="keyword">if</span> faturamento > 10000:
+    desconto = faturamento * 0.1
+<span class="keyword">elif</span> faturamento > 5000:
+    desconto = faturamento * 0.05
+<span class="keyword">elif</span> faturamento > 1000:
+    desconto = faturamento * 0.02</pre>
+              <p class="finding-desc">
+                <code>desconto = 0</code> é inicializado como fallback implícito antes do bloco
+                condicional. Não fica claro que <code>0</code> é o valor padrão para faturamentos
+                abaixo de <code>1000</code>. Junto com os magic numbers do finding #13, dificulta
+                a leitura das regras de negócio.
+              </p>
+              <div class="note l">
+                <span class="note-label">Por que é Low — Organização</span>
+                Não causa bug, mas obscurece a intenção. Refatorar para função com retorno
+                explícito torna a lógica mais legível e testável.
+              </div>
+              <div class="sol"><span class="sol-label">Solução — função com retorno explícito</span></div>
+              <pre><span class="keyword">def</span> <span class="fn">calcular_desconto</span>(faturamento):
+    <span class="keyword">if</span> faturamento > LIMITE_DESCONTO_ALTO:
+        <span class="keyword">return</span> faturamento * TAXA_DESCONTO_ALTO
+    <span class="keyword">if</span> faturamento > LIMITE_DESCONTO_MEDIO:
+        <span class="keyword">return</span> faturamento * TAXA_DESCONTO_MEDIO
+    <span class="keyword">if</span> faturamento > LIMITE_DESCONTO_BAIXO:
+        <span class="keyword">return</span> faturamento * TAXA_DESCONTO_BAIXO
+    <span class="keyword">return</span> 0</pre>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr style="border-color:var(--border2)">
+
+  <!-- TABELA RESUMO -->
+  <section>
+    <p class="sec-label">Resumo — Todos os Findings</p>
+    <div class="sum-table">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Descrição</th>
+            <th>Tipo de Smell</th>
+            <th>Severidade</th>
+            <th>Linha</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">01</td><td>SQL Injection — SELECT produtos</td><td>SQL Injection</td><td><span class="badge c">Critical</span></td><td class="line-col">28</td></tr>
+          <tr><td class="num">02</td><td>SQL Injection — INSERT produtos</td><td>SQL Injection</td><td><span class="badge c">Critical</span></td><td class="line-col">47</td></tr>
+          <tr><td class="num">03</td><td>SQL Injection — UPDATE produtos</td><td>SQL Injection</td><td><span class="badge c">Critical</span></td><td class="line-col">58</td></tr>
+          <tr><td class="num">04</td><td>SQL Injection — DELETE produtos</td><td>SQL Injection</td><td><span class="badge c">Critical</span></td><td class="line-col">68</td></tr>
+          <tr><td class="num">05</td><td>SQL Injection + Auth Bypass — usuários</td><td>SQL Injection / Auth Bypass</td><td><span class="badge c">Critical</span></td><td class="line-col">109</td></tr>
+          <tr><td class="num">06</td><td>SQL Injection — INSERT usuários</td><td>SQL Injection</td><td><span class="badge c">Critical</span></td><td class="line-col">127</td></tr>
+          <tr><td class="num">07</td><td>Query N+1 em loop de itens</td><td>Query N+1</td><td><span class="badge h">High</span></td><td class="line-col">139</td></tr>
+          <tr><td class="num">08</td><td>Cursores aninhados — pedidos por usuário</td><td>Callback Hell</td><td><span class="badge h">High</span></td><td class="line-col">173</td></tr>
+          <tr><td class="num">09</td><td>Cursores aninhados — todos os pedidos</td><td>Callback Hell</td><td><span class="badge h">High</span></td><td class="line-col">210</td></tr>
+          <tr><td class="num">10</td><td>Senha exposta em listagem geral</td><td>Sensitive Data Exposure</td><td><span class="badge h">High</span></td><td class="line-col">75</td></tr>
+          <tr><td class="num">11</td><td>Senha exposta ao buscar por ID</td><td>Sensitive Data Exposure + SQL Injection</td><td><span class="badge h">High</span></td><td class="line-col">92</td></tr>
+          <tr><td class="num">12</td><td>SQL Injection em criação de pedido</td><td>SQL Injection</td><td><span class="badge h">High</span></td><td class="line-col">120</td></tr>
+          <tr><td class="num">13</td><td>Magic Numbers em cálculo de desconto</td><td>Magic Numbers</td><td><span class="badge m">Medium</span></td><td class="line-col">257</td></tr>
+          <tr><td class="num">14</td><td>SQL Injection na busca dinâmica</td><td>SQL Injection / Código Duplicado</td><td><span class="badge m">Medium</span></td><td class="line-col">289</td></tr>
+          <tr><td class="num">15</td><td>Código Duplicado na query dinâmica</td><td>Código Duplicado</td><td><span class="badge m">Medium</span></td><td class="line-col">289</td></tr>
+          <tr><td class="num">16</td><td>Nomenclatura genérica (cursor, cursor2, cursor3)</td><td>Variáveis Abreviadas</td><td><span class="badge l">Low</span></td><td class="line-col">173</td></tr>
+          <tr><td class="num">17</td><td>Variável fora do bloco condicional</td><td>Dead Code / Organização</td><td><span class="badge l">Low</span></td><td class="line-col">256</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  function toggle(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+</script>
+</body>
+</html>
