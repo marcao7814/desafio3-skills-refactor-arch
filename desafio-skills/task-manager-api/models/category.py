@@ -1,5 +1,6 @@
 from database import db
 from datetime import datetime
+from utils.helpers import format_date
 
 class Category(db.Model):
     __tablename__ = 'categories'
@@ -11,11 +12,10 @@ class Category(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
-        d = {
+        return {
             'id': self.id,
             'name': self.name,
             'description': self.description,
             'color': self.color,
-            'created_at': str(self.created_at),
+            'created_at': format_date(self.created_at),
         }
-        return d
