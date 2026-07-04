@@ -7,10 +7,4 @@ function hashPassword(password) {
     return `${salt}:${derivedKey.toString('hex')}`;
 }
 
-function verifyPassword(password, storedHash) {
-    const [salt, key] = storedHash.split(':');
-    const derivedKey = crypto.scryptSync(password, salt, PASSWORD_HASH_KEYLEN);
-    return crypto.timingSafeEqual(Buffer.from(key, 'hex'), derivedKey);
-}
-
-module.exports = { hashPassword, verifyPassword };
+module.exports = { hashPassword };

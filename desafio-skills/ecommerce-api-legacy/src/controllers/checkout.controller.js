@@ -6,9 +6,18 @@ const auditLogModel = require('../models/auditLog.model');
 const { hashPassword } = require('../utils/password');
 const { PAYMENT_STATUS_PAID, PAYMENT_STATUS_DENIED, VISA_CARD_PREFIX } = require('../config/constants');
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CARD_NUMBER_REGEX = /^\d{13,19}$/;
+
 async function processCheckout(db, { userName, email, password, courseId, cardNumber }) {
     if (!userName || !email || !courseId || !cardNumber) {
         throw Object.assign(new Error('userName, email, courseId e cardNumber são obrigatórios'), { status: 400 });
+    }
+    if (!EMAIL_REGEX.test(email)) {
+        throw Object.assign(new Error('email inválido'), { status: 400 });
+    }
+    if (!CARD_NUMBER_REGEX.test(cardNumber)) {
+        throw Object.assign(new Error('cardNumber deve conter apenas dígitos (13 a 19)'), { status: 400 });
     }
 
     const course = await courseModel.findActiveById(db, courseId);

@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const settings = require('../config/settings');
 const { hashPassword } = require('../utils/password');
+const { COURSE_ACTIVE } = require('../config/constants');
 
 function createDb() {
     return new sqlite3.Database(settings.dbPath);
@@ -18,8 +19,8 @@ function initSchema(db) {
             'INSERT INTO users (name, email, pass) VALUES (?, ?, ?)',
             ['Leonan', 'leonan@fullcycle.com.br', hashPassword('123')]
         );
-        db.run('INSERT INTO courses (title, price, active) VALUES (?, ?, 1)', ['Clean Architecture', 997.0]);
-        db.run('INSERT INTO courses (title, price, active) VALUES (?, ?, 1)', ['Docker', 497.0]);
+        db.run('INSERT INTO courses (title, price, active) VALUES (?, ?, ?)', ['Clean Architecture', 997.0, COURSE_ACTIVE]);
+        db.run('INSERT INTO courses (title, price, active) VALUES (?, ?, ?)', ['Docker', 497.0, COURSE_ACTIVE]);
         db.run('INSERT INTO enrollments (user_id, course_id) VALUES (1, 1)');
         db.run("INSERT INTO payments (enrollment_id, amount, status) VALUES (1, 997.00, 'PAID')");
     });

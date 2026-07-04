@@ -3,4 +3,5 @@ module.exports = {
     PAYMENT_STATUS_DENIED: 'DENIED',
     VISA_CARD_PREFIX: '4',
     PASSWORD_HASH_KEYLEN: 32,
+    COURSE_ACTIVE: 1,
 };
