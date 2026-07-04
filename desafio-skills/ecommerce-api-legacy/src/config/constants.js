@@ -1,0 +1,6 @@
+module.exports = {
+    PAYMENT_STATUS_PAID: 'PAID',
+    PAYMENT_STATUS_DENIED: 'DENIED',
+    VISA_CARD_PREFIX: '4',
+    PASSWORD_HASH_KEYLEN: 32,
+};
