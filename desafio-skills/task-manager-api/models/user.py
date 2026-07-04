@@ -1,8 +1,6 @@
 from database import db
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
-from utils.helpers import format_date
-
+import hashlib
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -20,16 +18,21 @@ class User(db.Model):
             'id': self.id,
             'name': self.name,
             'email': self.email,
+            'password': self.password,
             'role': self.role,
             'active': self.active,
-            'created_at': format_date(self.created_at),
+            'created_at': str(self.created_at)
         }
 
     def set_password(self, pwd):
-        self.password = generate_password_hash(pwd)
+
+        self.password = hashlib.md5(pwd.encode()).hexdigest()
 
     def check_password(self, pwd):
-        return check_password_hash(self.password, pwd)
+        return self.password == hashlib.md5(pwd.encode()).hexdigest()
 
     def is_admin(self):
-        return self.role == 'admin'
+        if self.role == 'admin':
+            return True
+        else:
+            return False
