@@ -12,7 +12,7 @@ def listar_produtos(db):
 def buscar_produto(db, produto_id):
     produto = get_produto_by_id(db, produto_id)
     if not produto:
-        raise ValueError('Produto não encontrado')
+        raise LookupError('Produto não encontrado')
     return produto
 
 
@@ -34,7 +34,7 @@ def criar_produto(db, dados):
 
 def atualizar_produto(db, produto_id, dados):
     if not get_produto_by_id(db, produto_id):
-        raise ValueError('Produto não encontrado')
+        raise LookupError('Produto não encontrado')
     _validar_dados_produto(dados)
     update_produto(
         db,
@@ -49,7 +49,7 @@ def atualizar_produto(db, produto_id, dados):
 
 def remover_produto(db, produto_id):
     if not get_produto_by_id(db, produto_id):
-        raise ValueError('Produto não encontrado')
+        raise LookupError('Produto não encontrado')
     delete_produto(db, produto_id)
 
 

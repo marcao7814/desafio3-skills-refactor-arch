@@ -11,7 +11,7 @@ def listar_usuarios(db):
 def buscar_usuario(db, usuario_id):
     usuario = get_usuario_by_id(db, usuario_id)
     if not usuario:
-        raise ValueError('Usuário não encontrado')
+        raise LookupError('Usuário não encontrado')
     return usuario
 
 

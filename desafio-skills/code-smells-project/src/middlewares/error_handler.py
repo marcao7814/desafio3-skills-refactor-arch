@@ -6,6 +6,10 @@ def register_error_handlers(app):
     def handle_value_error(e):
         return jsonify({'erro': str(e), 'sucesso': False}), 400
 
+    @app.errorhandler(LookupError)
+    def handle_lookup_error(e):
+        return jsonify({'erro': str(e), 'sucesso': False}), 404
+
     @app.errorhandler(PermissionError)
     def handle_permission_error(e):
         return jsonify({'erro': str(e), 'sucesso': False}), 401
