@@ -1,25 +1,25 @@
-const config = {
-    dbUser: "admin_master",
-    dbPass: "senha_super_secreta_prod_123", 
-    paymentGatewayKey: "pk_live_1234567890abcdef",
-    smtpUser: "no-reply@fullcycle.com.br",
-    port: 3000
-};
+const express = require('express');
+const settings = require('./config/settings');
+const { createDb, initSchema } = require('./db');
+const createCheckoutRouter = require('./routes/checkout.routes');
+const createAdminRouter = require('./routes/admin.routes');
+const createUserRouter = require('./routes/user.routes');
+const errorHandler = require('./middlewares/errorHandler');
 
-let globalCache = {};
-let totalRevenue = 0;
+const app = express();
+app.use(express.json());
 
-function logAndCache(key, data) {
-    console.log(`[LOG] Salvando no cache: ${key}`);
-    globalCache[key] = data;
-}
+const db = createDb();
+initSchema(db);
 
-function badCrypto(pwd) {
-    let hash = "";
-    for(let i = 0; i < 10000; i++) {
-        hash += Buffer.from(pwd).toString('base64').substring(0, 2);
-    }
-    return hash.substring(0, 10);
-}
+app.use('/api/checkout', createCheckoutRouter(db));
+app.use('/api/admin', createAdminRouter(db));
+app.use('/api/users', createUserRouter(db));
 
-module.exports = { config, logAndCache, badCrypto, globalCache, totalRevenue };
+app.use(errorHandler);
+
+app.listen(settings.port, () => {
+    console.log(`API rodando em http://localhost:${settings.port}`);
+});
+
+module.exports = app;

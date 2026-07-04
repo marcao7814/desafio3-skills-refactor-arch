@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Smells</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0d1117;
+      --surf:    #161b22;
+      --border:  #30363d;
+      --border2: #21262d;
+      --text:    #e6edf3;
+      --soft:    #adbac7;
+      --muted:   #7d8590;
+      --c: #f85149;
+      --h: #f0883e;
+      --m: #d29922;
+      --l: #3fb950;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.65;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 60px 24px 50px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #fff;
+    }
+    header p {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.875rem;
+      max-width: 500px;
+      margin-inline: auto;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 52px 24px 96px;
+      display: flex;
+      flex-direction: column;
+      gap: 52px;
+    }
+
+    /* ── SEÇÃO ── */
+    section { display: flex; flex-direction: column; gap: 20px; }
+
+    .sec-label {
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge.c { color: var(--c); background: #f8514910; border: 1px solid #f8514928; }
+    .badge.h { color: var(--h); background: #f0883e10; border: 1px solid #f0883e28; }
+    .badge.m { color: var(--m); background: #d2992210; border: 1px solid #d2992228; }
+    .badge.l { color: var(--l); background: #3fb95010; border: 1px solid #3fb95028; }
+
+    /* ── TABELA RESUMO ── */
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead th {
+      text-align: left;
+      font-size: 0.67rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 14px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border2);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #ffffff03; }
+
+    /* ── CARDS DETALHADOS ── */
+    .cards { display: flex; flex-direction: column; gap: 16px; }
+
+    .card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .card-top {
+      padding: 20px 22px 18px;
+      border-bottom: 1px solid var(--border2);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-top-left { display: flex; flex-direction: column; gap: 2px; }
+
+    .card-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .card-sub { font-size: 0.78rem; color: var(--muted); }
+
+    .card-body { padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
+
+    .card-desc {
+      font-size: 0.855rem;
+      color: var(--soft);
+      line-height: 1.7;
+    }
+
+    .card-desc ul { margin: 8px 0 0 18px; }
+    .card-desc li { margin-top: 4px; }
+
+    .aside {
+      padding: 12px 16px;
+      border-left: 2px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .aside.c { border-color: #f8514940; }
+    .aside.h { border-color: #f0883e40; }
+    .aside.m { border-color: #d2992240; }
+    .aside.l { border-color: #3fb95040; }
+
+    .aside-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: .7;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .sol {
+      font-size: 0.82rem;
+      color: #58a6ff;
+      line-height: 1.6;
+    }
+    .sol-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    code {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.82em;
+      background: #ffffff0c;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* ── CATEGORIAS ── */
+    .cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) { .cat-grid { grid-template-columns: 1fr; } }
+
+    .cat-block {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+
+    .cat-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #58a6ff;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .cat-row {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border2);
+    }
+    .cat-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .cat-name { font-size: 0.84rem; font-weight: 600; color: var(--text); }
+    .cat-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── TABELA COMPARAÇÃO ── */
+    .cmp-table td:last-child { color: var(--muted); font-size: 0.82rem; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border2);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Code Smells — Tipos de Erros</h1>
+  <p>Sintomas de que algo está errado no design ou implementação, prejudicando manutenção, testabilidade e evolução do sistema.</p>
+</header>
+
+<main>
+
+  <!-- VISÃO GERAL -->
+  <section>
+    <p class="sec-label">Visão Geral</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Problema</th>
+          <th>Impacto Principal</th>
+          <th>Severidade</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>God Class</strong></td>
+          <td>Manutenibilidade e rigidez do design</td>
+          <td><span class="badge c">Critical</span></td>
+        </tr>
+        <tr>
+          <td><strong>Código Duplicado</strong></td>
+          <td>Custo de manutenção e risco de bugs</td>
+          <td><span class="badge h">High</span></td>
+        </tr>
+        <tr>
+          <td><strong>Callback Hell</strong></td>
+          <td>Legibilidade e controle de fluxo</td>
+          <td><span class="badge m">Medium</span></td>
+        </tr>
+        <tr>
+          <td><strong>Variáveis Abreviadas</strong></td>
+          <td>Compreensão imediata do negócio</td>
+          <td><span class="badge l">Low</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- EXPLICAÇÃO DETALHADA -->
+  <section>
+    <p class="sec-label">Explicação Detalhada</p>
+    <div class="cards">
+
+      <!-- God Class -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <span class="card-name">God Class</span>
+            <span class="card-sub">Classe Deus</span>
+          </div>
+          <span class="badge c">Critical</span>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">
+            Classe que "sabe demais" ou "faz demais". Viola o
+            <strong>Princípio da Responsabilidade Única (SRP)</strong> do SOLID.
+            Classe central com milhares de linhas, conectada a quase todas as outras
+            partes do software.
+            <ul>
+              <li><strong>Acoplamento Alto:</strong> qualquer mudança pode quebrar o sistema inteiro.</li>
+              <li><strong>Baixa Coesão:</strong> processa pagamento, envia e-mail e valida CPF na mesma classe.</li>
+            </ul>
+          </div>
+          <div class="aside c">
+            <span class="aside-label">Por que é Critical</span>
+            É o erro mais estrutural e perigoso. Cria um ponto único de falha e alto acoplamento
+            em todo o sistema. Em ecossistemas como Spring Boot, trava a evolução da aplicação,
+            impede testes unitários eficazes e torna qualquer refatoração futura um pesadelo de regressão.
+          </div>
+          <div class="sol">
+            <span class="sol-label">Solução</span>
+            Refatorar dividindo responsabilidades em classes menores e especializadas (serviços, utilitários, entidades).
+          </div>
+        </div>
+      </div>
+
+      <!-- Código Duplicado -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <span class="card-name">Código Duplicado</span>
+            <span class="card-sub">Duplicate Code — DRY Violation</span>
+          </div>
+          <span class="badge h">High</span>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">
+            O famoso "Ctrl+C, Ctrl+V". Ocorre quando a mesma lógica aparece em dois ou mais
+            lugares do sistema. Viola o princípio <strong>DRY (Don't Repeat Yourself)</strong>.
+            Se precisar corrigir um bug, terá que lembrar de <em>todos</em> os lugares onde
+            copiou aquele código. Se esquecer um, terá comportamentos inconsistentes.
+          </div>
+          <div class="aside h">
+            <span class="aside-label">Por que é High</span>
+            O impacto é direto na manutenção. Se uma regra de negócio muda ou um bug é encontrado
+            na lógica duplicada, você terá que corrigi-lo em múltiplos lugares. A chance de esquecer
+            um ponto e gerar inconsistência de dados — especialmente em transações de banco de dados — é altíssima.
+          </div>
+          <div class="sol">
+            <span class="sol-label">Solução</span>
+            Extração de método ou criação de uma classe utilitária/serviço que centralize essa lógica.
+          </div>
+        </div>
+      </div>
+
+      <!-- Callback Hell -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <span class="card-name">Callback Hell</span>
+            <span class="card-sub">Inferno de Callbacks</span>
+          </div>
+          <span class="badge m">Medium</span>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">
+            Ocorre principalmente em linguagens assíncronas como JavaScript. Acontece quando
+            várias funções assíncronas são aninhadas umas dentro das outras, criando uma estrutura
+            de código em formato de "pirâmide" que se move horizontalmente para a direita.
+            Torna o código extremamente difícil de ler, debugar e tratar erros, já que o fluxo
+            lógico fica fragmentado.
+          </div>
+          <div class="aside m">
+            <span class="aside-label">Por que é Medium</span>
+            Embora torne o código difícil de ler e manter, o impacto costuma ficar restrito àquela
+            camada específica de execução assíncrona. Em Java moderno (usando <code>CompletableFuture</code>
+            ou Project Reactor) é facilmente mitigado, mas ainda prejudica a rastreabilidade de erros
+            com Stack Traces complexos.
+          </div>
+          <div class="sol">
+            <span class="sol-label">Solução</span>
+            Utilizar Promises, <code>async/await</code> ou modularizar as funções em arquivos separados.
+          </div>
+        </div>
+      </div>
+
+      <!-- Variáveis Abreviadas -->
+      <div class="card">
+        <div class="card-top">
+          <div class="card-top-left">
+            <span class="card-name">Variáveis Abreviadas</span>
+            <span class="card-sub">Obscurity</span>
+          </div>
+          <span class="badge l">Low</span>
+        </div>
+        <div class="card-body">
+          <div class="card-desc">
+            É a prática de nomear variáveis com apenas uma letra ou siglas que não deixam claro
+            o propósito do dado. Ex: <code>int d = 10</code> em vez de <code>int diasParaVencimento = 10</code>.
+            O código é lido muito mais vezes do que é escrito. Variáveis como <code>usr</code>,
+            <code>pts</code> ou <code>temp</code> obrigam o desenvolvedor a gastar energia mental
+            tentando lembrar o que aquele valor representa no contexto.
+            <br><br>
+            <em style="color:var(--muted)">Exceção: variáveis de controle de loop muito curtos, como o famoso <code>i</code> em um <code>for</code>.</em>
+          </div>
+          <div class="aside l">
+            <span class="aside-label">Por que é Low</span>
+            É um problema de legibilidade e "limpeza" (Clean Code). Embora dificulte o entendimento
+            para novos desenvolvedores e aumente a carga cognitiva, não costuma causar falhas de
+            execução ou impedir a escalabilidade do sistema por si só. É o mais simples de resolver
+            com ferramentas de refatoração da IDE.
+          </div>
+          <div class="sol">
+            <span class="sol-label">Solução</span>
+            Adotar Clean Code. Nomes devem ser descritivos e pronunciáveis.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- CATEGORIAS -->
+  <section>
+    <p class="sec-label">Visão de Arquitetura — Outras Categorias</p>
+    <div class="cat-grid">
+
+      <div class="cat-block">
+        <p class="cat-title">Bloatheads — Inchadores</p>
+        <div class="cat-row">
+          <span class="cat-name">God Class</span>
+          <span class="cat-desc">Classe central que faz tudo — ponto único de falha.</span>
+        </div>
+        <div class="cat-row">
+          <span class="cat-name">Long Method</span>
+          <span class="cat-desc">Método com muitas linhas. Se precisa de comentário para explicar uma parte, essa parte deveria ser um método próprio.</span>
+        </div>
+        <div class="cat-row">
+          <span class="cat-name">Data Clumps</span>
+          <span class="cat-desc">Grupos de variáveis que quase sempre aparecem juntas (<code>inicio_periodo</code>, <code>fim_periodo</code>) deveriam ser uma classe própria.</span>
+        </div>
+      </div>
+
+      <div class="cat-block">
+        <p class="cat-title">Obstrucionistas de Mudança</p>
+        <div class="cat-row">
+          <span class="cat-name">Divergent Change</span>
+          <span class="cat-desc">Você precisa alterar uma mesma classe por muitos motivos diferentes — indica falta de coesão.</span>
+        </div>
+        <div class="cat-row">
+          <span class="cat-name">Shotgun Surgery</span>
+          <span class="cat-desc">Oposto do Divergent Change: uma única alteração exige pequenos ajustes em várias classes diferentes.</span>
+        </div>
+      </div>
+
+      <div class="cat-block">
+        <p class="cat-title">Dispensáveis</p>
+        <div class="cat-row">
+          <span class="cat-name">Lazy Class</span>
+          <span class="cat-desc">Classe que não faz o suficiente para justificar sua existência.</span>
+        </div>
+        <div class="cat-row">
+          <span class="cat-name">Dead Code</span>
+          <span class="cat-desc">Código que nunca é executado: funções órfãs, variáveis não utilizadas.</span>
+        </div>
+        <div class="cat-row">
+          <span class="cat-name">Speculative Generality</span>
+          <span class="cat-desc">"Vou deixar isso pronto caso a gente precise no futuro" — mas nunca é usado.</span>
+        </div>
+      </div>
+
+      <div class="cat-block">
+        <p class="cat-title">Acopladores</p>
+        <div class="cat-row">
+          <span class="cat-name">Feature Envy</span>
+          <span class="cat-desc">Método de uma classe mais interessado nos dados de outra do que nos seus próprios.</span>
+        </div>
+        <div class="cat-row">
+          <span class="cat-name">Inappropriate Intimacy</span>
+          <span class="cat-desc">Uma classe usa campos ou métodos privados de outra de forma excessiva.</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- COMPARAÇÃO -->
+  <section>
+    <p class="sec-label">Tabela de Comparação de Severidade</p>
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>Code Smell</th>
+          <th>Classificação</th>
+          <th>Por que?</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Shotgun Surgery</strong></td>
+          <td><span class="badge c">Critical</span></td>
+          <td>Torna a manutenção extremamente lenta e propensa a erros.</td>
+        </tr>
+        <tr>
+          <td><strong>Feature Envy</strong></td>
+          <td><span class="badge h">High</span></td>
+          <td>Indica que a lógica de negócio está no lugar errado.</td>
+        </tr>
+        <tr>
+          <td><strong>Long Method</strong></td>
+          <td><span class="badge m">Medium</span></td>
+          <td>Dificulta a leitura e os testes unitários.</td>
+        </tr>
+        <tr>
+          <td><strong>Dead Code</strong></td>
+          <td><span class="badge l">Low</span></td>
+          <td>Aumenta o tamanho do projeto, mas não afeta a execução.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+</body>
+</html>

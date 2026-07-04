@@ -5,11 +5,11 @@ POST {{baseUrl}}/api/checkout
 Content-Type: application/json
 
 {
-  "usr": "Guilherme",
-  "eml": "gui@fullcycle.com.br",
-  "pwd": "senhaforte",
-  "c_id": 2,
-  "card": "4111222233334444"
+  "userName": "Guilherme",
+  "email": "gui@fullcycle.com.br",
+  "password": "senhaforte",
+  "courseId": 2,
+  "cardNumber": "4111222233334444"
 }
 
 ### Checkout - pagamento recusado
@@ -17,15 +17,17 @@ POST {{baseUrl}}/api/checkout
 Content-Type: application/json
 
 {
-  "usr": "João",
-  "eml": "joao@teste.com",
-  "pwd": "123",
-  "c_id": 1,
-  "card": "5111222233334444"
+  "userName": "João",
+  "email": "joao@teste.com",
+  "password": "123",
+  "courseId": 1,
+  "cardNumber": "5111222233334444"
 }
 
 ### Relatório financeiro administrativo
 GET {{baseUrl}}/api/admin/financial-report
+x-admin-key: dev-only-insecure-admin-key
 
 ### Deletar usuário
 DELETE {{baseUrl}}/api/users/1
+x-admin-key: dev-only-insecure-admin-key
